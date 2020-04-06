@@ -11,7 +11,10 @@ import core.Sequence;
 import core.Session;
 
 /**
- * Finds all possible session sequences and records the longest one.
+ * Finds all possible session sequences based on link information
+ * and optimize for the length of the session.
+ * 
+ * @author Murat Ali Bayir
  */
 public class IntegerProgramming extends LinkBasedConstructor {
 
@@ -83,11 +86,9 @@ public class IntegerProgramming extends LinkBasedConstructor {
 		List<String> webPages = candidateSession.getSequence();
 		
 		for (int i = 0; i < webPages.size(); i++) {
-			//System.out.println("Iteration " + i + " *********************");
 			String currentPage = webPages.get(i);
 			boolean isAnyExtended = false;
 			List<Sequence> tempSequences = new ArrayList<>();
-			//System.out.println("outputSequences size: " + outputSequences.size());
 			for (int j = 0; j < outputSequences.size(); j++) {
 				Sequence newSequence = extendSequence(
 						outputSequences.get(j),

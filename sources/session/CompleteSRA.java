@@ -10,6 +10,13 @@ import java.util.Map;
 import core.Sequence;
 import core.Session;
 
+
+/**
+ * Base class for link based session construction methods.
+ * 
+ * @author Murat Ali Bayir
+ *
+ */
 public class CompleteSRA extends LinkBasedConstructor {
 
 	private static Map<String, Mode> modeMap;

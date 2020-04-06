@@ -18,11 +18,18 @@ import session.TimeOriented;
 import core.Sequence;
 import core.Session;
 
+/**
+ * Predicts the next page in the session by using Bayesian Predictor for each
+ * session construction algorithms.
+ * 
+ * @author Murat Ali Bayir
+ *
+ */
 public class PagePredictor extends LinkBasedConstructor {
 	public static int MAX_TAIL_COUNT = -1;
 	private static PrintStream resultStream = null;
 	private static double PENALTY_COEFFICIENT = 0.1d;
-	
+
 	private TimeOriented timeOriented;
 	private SmartSRA smartSRA;
 	private CompleteSRA completeSRA;
@@ -35,18 +42,14 @@ public class PagePredictor extends LinkBasedConstructor {
 	private int numberOfComplexSequences;
 
 	public enum Algorithm {
-		TO(0),
-		SmartSRA(1),
-		CSRA(2),
-		IP(3),
-		NO(4);
-		
+		TO(0), SmartSRA(1), CSRA(2), IP(3), NO(4);
+
 		private int id;
 
 		private Algorithm(int id) {
 			this.id = id;
 		}
-		
+
 		private int getId() {
 			return id;
 		}
@@ -81,16 +84,16 @@ public class PagePredictor extends LinkBasedConstructor {
 		numberOfComplexSequences = 0;
 		numberOfTrivialSequences = 0;
 	}
-	
+
 	public void loadSessionGenerators() {
 		smartSRA.setTopology(topology);
 		completeSRA.setTopology(topology);
 		integerProgramming.setTopology(topology);
 		navigationOriented.setTopology(topology);
 	}
-	
-	public void loadModels(String toPatterns, String ssraPatterns, String csraPatterns, String ipPatterns, String noPatterns)
-			throws IOException {
+
+	public void loadModels(String toPatterns, String ssraPatterns, String csraPatterns, String ipPatterns,
+			String noPatterns) throws IOException {
 		toPredictor.loadModel(toPatterns);
 		System.out.println("Time oriented Predictor model is loaded!");
 		smartSRAPredictor.loadModel(ssraPatterns);
@@ -102,7 +105,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		noPredictor.loadModel(noPatterns);
 		System.out.println("NO Predictor model is loaded!");
 	}
-	
+
 	private Session cutSession(Session candidateSession, int cutPoint) {
 		List<String> visitedPages = new ArrayList<>();
 		List<String> referrers = new ArrayList<>();
@@ -118,27 +121,30 @@ public class PagePredictor extends LinkBasedConstructor {
 		shortSession.setInitalTime(candidateSession.getInitalTime());
 		return shortSession;
 	}
-	
-	public void logFailingPrediction(
-			Algorithm algo,
-			List<Sequence> sequences,
-			List<Pattern> matchedPatterns,
+
+	public void logFailingPrediction(Algorithm algo, List<Sequence> sequences, List<Pattern> matchedPatterns,
 			Set<String> result) {
-		System.out.println("**** " + algo +" Sequences***");
+		System.out.println("**** " + algo + " Sequences***");
 		for (int i = 0; i < sequences.size(); i++) {
 			System.out.println(sequences.get(i).toString());
 		}
-		System.out.println("**** " + algo +" Matched Patterns ***");
+		System.out.println("**** " + algo + " Matched Patterns ***");
 		Collections.sort(matchedPatterns);
 		for (Pattern pattern : matchedPatterns) {
 			System.out.println(pattern.toPrint());
 		}
-		System.out.println("**** " + algo +" Results ***");
+		System.out.println("**** " + algo + " Results ***");
 		for (String prediction : result) {
 			System.out.println(prediction);
 		}
 	}
 
+	/***
+	 * Predicts the page at position index for the given candidate session.
+	 * 
+	 * @param candidateSession
+	 * @param index
+	 */
 	private void predict(Session candidateSession, int index) {
 		String target = candidateSession.getSequence().get(index);
 		boolean isTrivial = isTrivial(candidateSession);
@@ -146,18 +152,18 @@ public class PagePredictor extends LinkBasedConstructor {
 		List<Sequence> toSequences = new ArrayList<>();
 		for (int i = index; i >= 1; i--) {
 			Session cutSession = cutSession(candidateSession, i);
-			float penalty = (float)Math.pow(PENALTY_COEFFICIENT, (index - i));
+			float penalty = (float) Math.pow(PENALTY_COEFFICIENT, (index - i));
 			timeOriented.processSessionForPrediction(cutSession, toSequences, false, penalty);
 		}
 		List<Pattern> toMatchedPatterns = new ArrayList<>();
 		Set<String> toSet = toPredictor.predictNextItem(toSequences, toMatchedPatterns);
 		emptyPredictor[Algorithm.TO.getId()] += toSet.isEmpty() ? 1 : 0;
 		successCount[Algorithm.TO.getId()] += toSet.contains(target.trim()) ? 1 : 0;
-		
+
 		List<Sequence> smartSRASequences = new ArrayList<>();
 		for (int i = index; i >= 1; i--) {
 			Session cutSession = cutSession(candidateSession, i);
-			float penalty = (float)Math.pow(PENALTY_COEFFICIENT, (index - i));
+			float penalty = (float) Math.pow(PENALTY_COEFFICIENT, (index - i));
 			smartSRA.processSession(cutSession, smartSRASequences, false, penalty);
 		}
 		List<Pattern> ssraMatchedPatterns = new ArrayList<>();
@@ -169,7 +175,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		List<Sequence> csraSequences = new ArrayList<>();
 		for (int i = index; i >= 1; i--) {
 			Session cutSession = cutSession(candidateSession, i);
-			float penalty = (float)Math.pow(PENALTY_COEFFICIENT, (index - i));
+			float penalty = (float) Math.pow(PENALTY_COEFFICIENT, (index - i));
 			completeSRA.processSession(cutSession, csraSequences, false, penalty);
 		}
 		List<Pattern> csraMatchedPatterns = new ArrayList<>();
@@ -181,7 +187,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		List<Sequence> ipSequences = new ArrayList<>();
 		for (int i = index; i >= 1; i--) {
 			Session cutSession = cutSession(candidateSession, i);
-			float penalty = (float)Math.pow(PENALTY_COEFFICIENT, (index - i));
+			float penalty = (float) Math.pow(PENALTY_COEFFICIENT, (index - i));
 			integerProgramming.processSession(cutSession, ipSequences, false, penalty);
 		}
 		List<Pattern> ipMatchedPatterns = new ArrayList<>();
@@ -192,7 +198,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		List<Sequence> noSequences = new ArrayList<>();
 		for (int i = index; i >= 1; i--) {
 			Session cutSession = cutSession(candidateSession, i);
-			float penalty = (float)Math.pow(PENALTY_COEFFICIENT, (index - i));
+			float penalty = (float) Math.pow(PENALTY_COEFFICIENT, (index - i));
 			navigationOriented.processSession(cutSession, noSequences, false, penalty);
 		}
 		List<Pattern> noMatchedPatterns = new ArrayList<>();
@@ -213,7 +219,7 @@ public class PagePredictor extends LinkBasedConstructor {
 				if (!references.get(i).trim().equals(visitedPages.get(i - 1).trim())) {
 					if (!references.get(i).trim().equals(LogParser.EXTERNAL_PLACEHOLDER)) {
 						String reference = references.get(i);
-						if (visitedPages.indexOf(reference) < (i - 1)
+						if (visitedPages.indexOf(reference) < (i - 1) 
 								&& visitedPages.indexOf(reference) >= 0
 								&& !reference.equals(visitedPages.get(i))) {
 							if (i >= 2) {
@@ -226,7 +232,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		}
 		return true;
 	}
-	
+
 	private void processNonTrivialSession(Session candidateSession) {
 		if (candidateSession.getSequence().size() <= 1) {
 			numberOfTrivialSequences++;
@@ -260,42 +266,42 @@ public class PagePredictor extends LinkBasedConstructor {
 	}
 
 	@Override
-	public void processSession(Session candidateSession,
-			List<Sequence> outputSequences, boolean skipSimpleSessions, float penalty) {
+	public void processSession(Session candidateSession, List<Sequence> outputSequences, boolean skipSimpleSessions,
+			float penalty) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public void processSessionForPrediction(Session candidateSession,
-			List<Sequence> sequences, boolean skipSimpleSessions, float penalty) {
+	public void processSessionForPrediction(Session candidateSession, List<Sequence> sequences,
+			boolean skipSimpleSessions, float penalty) {
 		throw new UnsupportedOperationException();
 	}
 
 	public static void main(String[] args) {
-		if(args.length != 12) {
+		if (args.length != 12) {
 			System.out.print("Usage: PagePredictor <inputDir> <topologyFile> <outputFile> <numberOfPredictedItems> ");
 			System.out.print("<maxTailCount> <TO-PatternsFile> <SmartSRA-PatternsFile> <CompleteSRA-PatternsFile> ");
 			System.out.println("<IP-PatternsFile> <NO-PatternsFile> <domainName>");
 			return;
 		}
 
-		String inputFolder				= args[1];
-		String topologyFile				= args[2];
-		String outputFile				= args[3];
-		String numberOfPredictedItems 	= args[4];
-		String maxTailCount				= args[5];
-		String toPatterns				= args[6];
-		String ssraPatterns				= args[7];
-		String csraPatterns				= args[8];
-		String ipPatterns				= args[9];
-		String noPatterns				= args[10];
-		String domainName				= args[11];
+		String inputFolder = args[1];
+		String topologyFile = args[2];
+		String outputFile = args[3];
+		String numberOfPredictedItems = args[4];
+		String maxTailCount = args[5];
+		String toPatterns = args[6];
+		String ssraPatterns = args[7];
+		String csraPatterns = args[8];
+		String ipPatterns = args[9];
+		String noPatterns = args[10];
+		String domainName = args[11];
 
 		MAX_TAIL_COUNT = Integer.parseInt(maxTailCount);
 		PagePredictor pagePredictor = new PagePredictor(domainName, Integer.parseInt(numberOfPredictedItems));
-		
-		String resultFile = "Results\\PredictionResults-" + Integer.parseInt(numberOfPredictedItems)
-				+ "-" + Integer.parseInt(maxTailCount) + ".txt";
+
+		String resultFile = "Results\\PredictionResults-" + Integer.parseInt(numberOfPredictedItems) + "-"
+				+ Integer.parseInt(maxTailCount) + ".txt";
 
 		try {
 			resultStream = new PrintStream(resultFile);
@@ -309,7 +315,7 @@ public class PagePredictor extends LinkBasedConstructor {
 		System.out.println("processing files");
 		pagePredictor.ProcessFiles(inputFolder);
 		pagePredictor.printPerformance();
-	    outputStream.close();
-	    resultStream.close();
+		outputStream.close();
+		resultStream.close();
 	}
 }

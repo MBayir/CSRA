@@ -3,13 +3,19 @@ package utils;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Utility class that contains string or collection related functionality.
+ * 
+ * @author Murat Ali Bayir
+ *
+ */
 public class Utils {
 
 	private static String[] Months = {"Jan","Feb","Mar","Apr","May","Jun","Jul",
 			"Aug","Sep","Oct","Nov","Dec"};
 	
 	/**
-	 * 
+	 * @param inputMonth. The string representation of the month that contains only 3 letters.
 	 * @return numeric representation of the input month, returns -1 otherwise.
 	 */
 	public static int returnNumericMonth(String inputMonth){
@@ -18,7 +24,7 @@ public class Utils {
 				return i;
 			}
 		}
-			return -1;
+		return -1;
 	}
 
 	  /**
