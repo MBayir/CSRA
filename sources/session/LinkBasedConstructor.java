@@ -62,21 +62,6 @@ public abstract class LinkBasedConstructor extends SessionConstructor {
 			ipToSessions.put(ipNo, new Session(ipNo, visitedPage, visitTime, visitTime, refUrl, numberOfTOSessions));
 		}
 	}
-	
-	/**
-	 * Processes the candidate session by applying current link based session construction
-	 * algorithm and stores the generated sequences in outputsequences.
-	 * 
-	 * @param candidateSession the input session to process
-	 * @param outputSequences stores the generated sequences
-	 * @param skipSimpleSessions the flag to skip simple sessions
-	 * @param penalty the penalty coefficient for all sequences generated from candidate session
-	 */
-	public abstract void processSession(
-			Session candidateSession,
-			List<Sequence> outputSequences,
-			boolean skipSimpleSessions,
-			float penalty);
 
 	@Override
 	public void processSession(Session candidateSession, boolean skipSimpleSessions) {

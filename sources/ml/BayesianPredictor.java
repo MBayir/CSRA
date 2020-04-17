@@ -138,7 +138,7 @@ public class BayesianPredictor {
 	 * @param result             the result of selected patterns
 	 * @param numberOfItems      to determine how many patterns will be selected
 	 */
-	private void applyRouletteWheelAndSelect(Hashtable<String, Float> candidateToSupport, Set<String> result,
+	private void applySoftMaxAndSelect(Hashtable<String, Float> candidateToSupport, Set<String> result,
 			int numberOfItems) {
 		if (numberOfItems >= 1 && candidateToSupport.size() >= 1) {
 			String[] candidates = new String[candidateToSupport.size()];
@@ -154,7 +154,7 @@ public class BayesianPredictor {
 			int index = findIndex(values, randomNumber, 0, values.length - 1);
 			result.add(candidates[index]);
 			candidateToSupport.remove(candidates[index]);
-			applyRouletteWheelAndSelect(candidateToSupport, result, numberOfItems - 1);
+			applySoftMaxAndSelect(candidateToSupport, result, numberOfItems - 1);
 		}
 	}
 
@@ -236,7 +236,7 @@ public class BayesianPredictor {
 				}
 			}
 		}
-		applyRouletteWheelAndSelect(candidateToSupportTable, result, numberOfPredictedItem);
+		applySoftMaxAndSelect(candidateToSupportTable, result, numberOfPredictedItem);
 		return result;
 	}
 
@@ -260,7 +260,7 @@ public class BayesianPredictor {
 				String candidateItem = getLast(matched);
 				candidateToSupportTable.put(candidateItem, support);
 			}
-			applyRouletteWheelAndSelect(candidateToSupportTable, result, numberOfPredictedItem);
+			applySoftMaxAndSelect(candidateToSupportTable, result, numberOfPredictedItem);
 		}
 		return result;
 	}

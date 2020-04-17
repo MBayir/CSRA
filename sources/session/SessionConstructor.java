@@ -65,6 +65,21 @@ public abstract class SessionConstructor {
 			List<Sequence> sequences,
 			boolean skipSimpleSessions,
 			float penalty);
+	
+	/**
+	 * Processes the candidate session by applying current link based session construction
+	 * algorithm and stores the generated sequences in outputsequences.
+	 * 
+	 * @param candidateSession the input session to process
+	 * @param outputSequences stores the generated sequences
+	 * @param skipSimpleSessions the flag to skip simple sessions
+	 * @param penalty the penalty coefficient for all sequences generated from candidate session
+	 */
+	public abstract void processSession(
+			Session candidateSession,
+			List<Sequence> outputSequences,
+			boolean skipSimpleSessions,
+			float penalty);
 
 	/**
 	 * Creates session with the current {@code visitedPage} or append this page to an exiting session

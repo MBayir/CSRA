@@ -25,6 +25,11 @@ public class TimeOriented extends SessionConstructor {
 	@Override
 	public void processSessionForPrediction(Session candidateSession,
 			List<Sequence> sequences, boolean skipSimpleSessions, float penalty) {
+	}
+	
+	@Override
+	public void processSession(Session candidateSession,
+			List<Sequence> sequences, boolean skipSimpleSessions, float penalty) {		
 		int lastIndex = candidateSession.getSequence().size();		
 		for (int i = lastIndex; i <= lastIndex; i++) {
 			StringBuffer prefix = new StringBuffer("");
