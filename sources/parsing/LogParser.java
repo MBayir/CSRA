@@ -111,7 +111,16 @@ public class LogParser {
 			return EXTERNAL_PLACEHOLDER;
 		}	
 		int start = input.indexOf(domainName);
+		if (input.length() > (start + domainName.length()))
+		{
+			if (input.charAt(start + domainName.length()) == '/')
+			{
+				start += 1;
+			}
+		}
+		
 		String result = input.substring(start + domainName.length());
+		
 		if(result.length() < 1) {
 			result="/";
 		}

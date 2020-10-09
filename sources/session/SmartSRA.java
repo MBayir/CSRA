@@ -34,14 +34,16 @@ public class SmartSRA extends LinkBasedConstructor {
 	}
 
 	@Override
-	public void processSessionForPrediction(Session candidateSession, List<Sequence> sequences,
-			boolean skipSimpleSessions, float penalty) {
+	public void processSessionForPrediction(Session candidateSession,
+			List<Sequence> sequences, boolean skipSimpleSessions, float penalty) {
 		processSession(candidateSession, sequences, skipSimpleSessions, penalty);
 	}
 
 	@Override
-	public void processSession(Session candidateSession, List<Sequence> outputSequencesForPrediction,
-			boolean skipSimpleSessions, float penalty) {
+	public void processSession(Session candidateSession,
+			List<Sequence> outputSequencesForPrediction,
+			boolean skipSimpleSessions,
+			float penalty) {
 		if (isSimpleSession(candidateSession) && skipSimpleSessions) {
 			return;
 		}

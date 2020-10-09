@@ -82,8 +82,8 @@ public class CompleteSRA extends LinkBasedConstructor {
 	}
 
 	@Override
-	public void processSessionForPrediction(Session candidateSession, List<Sequence> sequences,
-			boolean skipSimpleSessions, float penalty) {
+	public void processSessionForPrediction(Session candidateSession,
+			List<Sequence> sequences, boolean skipSimpleSessions, float penalty) {
 		processSession(candidateSession, sequences, skipSimpleSessions, penalty);
 	}
 
@@ -91,8 +91,11 @@ public class CompleteSRA extends LinkBasedConstructor {
 	 * Function to process single session coming from time oriented heuristics.
 	 */
 	@Override
-	public void processSession(Session candidateSession, List<Sequence> outputSequencesForPrediction,
-			boolean skipSimpleSessions, float penalty) {
+	public void processSession(
+			Session candidateSession,
+			List<Sequence> outputSequencesForPrediction,
+			boolean skipSimpleSessions,
+			float penalty) {
 
 		if (isSimpleSession(candidateSession) && skipSimpleSessions) {
 			return;
@@ -105,7 +108,10 @@ public class CompleteSRA extends LinkBasedConstructor {
 			boolean isAnyExtended = false;
 			List<Sequence> tempSequences = new ArrayList<>();
 			for (int j = 0; j < outputSequences.size(); j++) {
-				Sequence newSequence = extendSequence(outputSequences.get(j), currentPage, candidateSession);
+				Sequence newSequence = extendSequence(
+						outputSequences.get(j),
+						currentPage,
+						candidateSession);
 				isAnyExtended = (!isAnyExtended) ? (newSequence != null) : true;
 				if (newSequence != null) {
 					tempSequences.add(newSequence);
@@ -116,7 +122,7 @@ public class CompleteSRA extends LinkBasedConstructor {
 			}
 			outputSequences.addAll(tempSequences);
 		}
-
+				
 		int maximalCount = 0;
 		for (int i = 0; i < outputSequences.size(); i++) {
 			if (outputSequences.get(i).getLength() >= 1 && outputSequences.get(i).isMaximal()) {
@@ -157,14 +163,17 @@ public class CompleteSRA extends LinkBasedConstructor {
 			return;
 		}
 
-		String inputFolder = args[1];
-		String topologyFile = args[2];
-		String outputFile = args[3];
-		String runningMode = args[4];
-		String domainName = args[5];
+		String inputFolder		= args[1];
+		String topologyFile		= args[2];
+		String outputFile		= args[3];
+		String runningMode 		= args[4];
+		String domainName		= args[5];
 
-		CompleteSRA completeSRA = new CompleteSRA(domainName, modeMap.get(runningMode), Integer.MAX_VALUE, false);
-
+		CompleteSRA completeSRA = new CompleteSRA(domainName,
+				modeMap.get(runningMode),
+				Integer.MAX_VALUE,
+				false);
+		
 		try {
 			outputStream = new PrintStream(outputFile);
 			System.out.println("Topology File: " + topologyFile);

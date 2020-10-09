@@ -46,6 +46,13 @@ public class Sequence implements Comparable<Sequence> {
 			sequence.add(items[i].trim());
 		}
 	}
+	
+	public Sequence(List<String> input) {
+		this();
+		for (int i = 0; i < input.size(); i++) {
+			sequence.add(input.get(i));
+		}
+	}
 
 	public float getPenalty() {
 		return penalty;

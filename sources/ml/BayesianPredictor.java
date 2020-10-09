@@ -20,37 +20,44 @@ public class BayesianPredictor {
 	 * Stores pattern -> support pairs.
 	 */
 	private Hashtable<String, Float> patternToSupport;
-
+	
 	/**
 	 * Stores prefix -> pattern pairs.
 	 */
 	private Hashtable<String, Set<String>> prefixToPatternSet;
-
+	
 	/**
 	 * Stores the maximum number of predicted items.
 	 */
 	private int numberOfPredictedItem;
-
+	
 	/**
 	 * Random object to select random numbers for Bayesian predictor.
 	 */
 	private Random random;
-
+	
 	/**
-	 * Maximum number of iterations while taking tail of the current sequence if
-	 * there is no prefix with the current sequence.
+	 * Maximum number of iterations while taking tail of the current sequence
+	 * if there is no prefix with the current sequence.
 	 */
 	private int maxTailCount;
-
-	public BayesianPredictor(int numberOfPredictedItem, int numberOfStepsBack) {
+	
+	/**
+	 * The name of the sessions reconstruction heuristics.
+	 */
+	private String nameOfHeuristic;
+	
+	public BayesianPredictor(int numberOfPredictedItem, int numberOfStepsBack, String nameOfHeuristic) {
 		patternToSupport = new Hashtable<>();
 		prefixToPatternSet = new Hashtable<>();
 		random = new Random();
 		this.numberOfPredictedItem = numberOfPredictedItem;
 		this.maxTailCount = numberOfStepsBack;
+		this.nameOfHeuristic = nameOfHeuristic;
 	}
-
-	public BayesianPredictor(int numberOfPredictedItem, Hashtable<String, Set<String>> prefixToPatternSet,
+	
+	public BayesianPredictor(int numberOfPredictedItem,
+			Hashtable<String, Set<String>> prefixToPatternSet,
 			Hashtable<String, Float> patternToSupport) {
 		this.numberOfPredictedItem = numberOfPredictedItem;
 		this.prefixToPatternSet = prefixToPatternSet;
@@ -62,7 +69,7 @@ public class BayesianPredictor {
 	 * Returns the prefix of the given {@code pattern}. The prefix of pattern
 	 * 'Item{1}-Item{2}-...-Item{N}' is 'Item{1}-Item{2}-...-Item{N-1}'.
 	 */
-	private String getPrefix(String pattern) {
+	private String getPrefix(String pattern){
 		String[] items = pattern.split("-");
 		StringBuffer buffer = new StringBuffer(items[0]);
 		for (int i = 1; i < (items.length - 1); i++) {
@@ -77,7 +84,7 @@ public class BayesianPredictor {
 	 */
 	private String getLast(String pattern) {
 		String[] items = pattern.split("-");
-		if (items.length >= 1) {
+		if(items.length >= 1) {
 			return items[items.length - 1];
 		} else {
 			return "";
@@ -89,7 +96,7 @@ public class BayesianPredictor {
 	 */
 	private String getTail(String pattern) {
 		String[] items = pattern.split("-");
-		if (items.length >= 2) {
+		if(items.length >= 2) {
 			StringBuffer buffer = new StringBuffer("");
 			for (int i = 1; i < items.length; i++) {
 				if (i != 1) {
@@ -104,13 +111,13 @@ public class BayesianPredictor {
 	}
 
 	/**
-	 * Binary search to find index i^th in numbers such that: (target <= numbers[i]
-	 * && target > numbers[i-1])
+	 * Binary search to find index i^th in numbers such that:
+	 * (target <= numbers[i] && target > numbers[i-1])
 	 * 
 	 * @param numbers the array of numbers to search
-	 * @param target  the target number to find in an array
-	 * @param min     the left side index
-	 * @param max     the right side index
+	 * @param target the target number to find in an array
+	 * @param min the left side index
+	 * @param max the right side index
 	 * @return
 	 */
 	private int findIndex(long[] numbers, long target, int min, int max) {
@@ -130,17 +137,24 @@ public class BayesianPredictor {
 	}
 
 	/**
-	 * Select n items where n = {@code numberOfItems} from the key set of
-	 * candidateToSupport table. Each key has selection probability that is
-	 * proportional to their support value.
+	 * Select n items where n = {@code numberOfItems} from the key set of 
+	 * candidateToSupport table. Each key has selection probability that is proportional
+	 * to their support value.
 	 * 
 	 * @param candidateToSupport the candidate pattern to support table
-	 * @param result             the result of selected patterns
-	 * @param numberOfItems      to determine how many patterns will be selected
+	 * @param result the result of selected patterns
+	 * @param numberOfItems to determine how many patterns will be selected
 	 */
-	private void applySoftMaxAndSelect(Hashtable<String, Float> candidateToSupport, Set<String> result,
+	private void applySoftMaxAndSelect(
+			Hashtable<String, Float> candidateToSupport,
+			Set<String> result,
 			int numberOfItems) {
-		if (numberOfItems >= 1 && candidateToSupport.size() >= 1) {
+		if (numberOfItems >= candidateToSupport.size())
+		{
+			for (String candidate : candidateToSupport.keySet()) {
+				result.add(candidate);
+			}
+		} else if (numberOfItems >= 1 && candidateToSupport.size() >= 1) {
 			String[] candidates = new String[candidateToSupport.size()];
 			candidateToSupport.keySet().toArray(candidates);
 			long[] values = new long[candidateToSupport.size()];
@@ -148,9 +162,9 @@ public class BayesianPredictor {
 			for (int i = 0; i < candidates.length; i++) {
 				totalSum += (long) (candidateToSupport.get(candidates[i]) * Math.pow(10.0, 12.0));
 				values[i] = totalSum;
-
+				
 			}
-			long randomNumber = (long) (random.nextDouble() * totalSum);
+			long randomNumber = (long)(random.nextDouble() * totalSum);
 			int index = findIndex(values, randomNumber, 0, values.length - 1);
 			result.add(candidates[index]);
 			candidateToSupport.remove(candidates[index]);
@@ -163,7 +177,7 @@ public class BayesianPredictor {
 			return sequence;
 		} else {
 			int step = 1;
-			while (!prefixToPatternSet.containsKey(sequence) && !sequence.isEmpty()) {
+			while(!prefixToPatternSet.containsKey(sequence) && !sequence.isEmpty()) {
 				if (step == maxTailCount) {
 					return "";
 				}
@@ -173,37 +187,48 @@ public class BayesianPredictor {
 			return sequence;
 		}
 	}
-
-	private List<Sequence> bringExistingTail(List<Sequence> sequence) {
-		for (Sequence item : sequence) {
-			if (prefixToPatternSet.containsKey(item.toString().trim())) {
-				return sequence;
+	
+	private Sequence GetTail(Sequence input, int tailSize) {
+		if (input.getLength() < tailSize)
+		{
+			return null;
+		} else if (input.getLength() == tailSize)
+		{
+			return input;
+		} else {
+			int start = input.getLength() - 1;
+			int end = input.getLength() - 1;
+			start = start - tailSize + 1;
+			List<String> sequence = new ArrayList<String>();
+			for (int i = start; i <= end; i++)
+			{
+				sequence.add(input.getSequence().get(i));
 			}
-		}
-
-		int step = 1;
-		while (true) {
-			List<Sequence> temp = new ArrayList<>();
-			for (Sequence item : sequence) {
-				String tail = getTail(item.toString());
-				if (!tail.equals("") && prefixToPatternSet.containsKey(tail)) {
-					temp.add(new Sequence(tail, item.getPenalty()));
-				}
-			}
-			if (!temp.isEmpty()) {
-				return temp;
-			}
-			if (step >= maxTailCount) {
-				return sequence;
-			}
-			step++;
+			return new Sequence(sequence);
 		}
 	}
-
+	
+	private List<Sequence> bringExistingTail(List<Sequence> sequences) {		
+		List<Sequence> result = new ArrayList<Sequence>();
+		for (Sequence item : sequences) {
+			for (int i = 1; i <= maxTailCount; i++)
+			{
+				Sequence currentResult = GetTail(item, i);
+				if (currentResult != null)
+				{
+					if (prefixToPatternSet.containsKey(currentResult.toString().trim())) {
+						result.add(currentResult);
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
 	/**
 	 * Predict the next item that can come after sequence where sequence is
-	 * 'Item{1}-Item{2}-...-Item{N}. This function returns the set of possible items
-	 * for position Item{N+1}.
+	 * 'Item{1}-Item{2}-...-Item{N}. This function returns the set of possible
+	 * items for position Item{N+1}.
 	 * 
 	 * @param sequence the sequence for which the next item to be predicted
 	 * @return the set of possible items that can come after {@code sequence}
@@ -211,20 +236,15 @@ public class BayesianPredictor {
 	public Set<String> predictNextItem(List<Sequence> inputSequences, List<Pattern> matchedPatternsOutput) {
 		Set<String> result = new HashSet<>();
 		List<Sequence> sequences = bringExistingTail(inputSequences);
-		// List<String> sequences = inputSequences;
 		Hashtable<String, Float> candidateToSupportTable = new Hashtable<>();
 		for (int i = 0; i < sequences.size(); i++) {
 			Sequence sequence = sequences.get(i);
 			if (prefixToPatternSet.containsKey(sequence.toString())) {
 				Set<String> matchedPatterns = prefixToPatternSet.get(sequence.toString());
-				for (String matchedPatternString : matchedPatterns) {
-					Float support = patternToSupport.get(matchedPatternString);
-					support *= sequence.getPenalty();
-					matchedPatternsOutput.add(new Pattern(matchedPatternString, support, true));
-				}
+				Float tailSupport = patternToSupport.get(sequence.toString());
 				for (String matched : matchedPatterns) {
 					Float support = patternToSupport.get(matched);
-					support *= sequence.getPenalty();
+					support = (support / tailSupport);
 					String candidateItem = getLast(matched);
 					if (candidateToSupportTable.containsKey(candidateItem)) {
 						Float value = candidateToSupportTable.get(candidateItem);
@@ -239,11 +259,12 @@ public class BayesianPredictor {
 		applySoftMaxAndSelect(candidateToSupportTable, result, numberOfPredictedItem);
 		return result;
 	}
+	
 
 	/**
 	 * Predict the next item that can come after sequence where sequence is
-	 * 'Item{1}-Item{2}-...-Item{N}. This function returns the set of possible items
-	 * for position Item{N+1}.
+	 * 'Item{1}-Item{2}-...-Item{N}. This function returns the set of possible
+	 * items for position Item{N+1}.
 	 * 
 	 * @param sequence the sequence for which the next item to be predicted
 	 * @return the set of possible items that can come after {@code sequence}
@@ -269,8 +290,8 @@ public class BayesianPredictor {
 	 * Loads the Bayesian predictor model from frequent patterns file.
 	 * 
 	 * @param inputFile the input file that constrains all of the patterns.
-	 * @throws IOException if an error occurs while opening or reading from input
-	 *                     file
+	 * @throws IOException if an error occurs while opening or reading from
+	 *         input file
 	 */
 	public void loadModel(String inputFile) throws IOException {
 		// Calculate the support of candidate patterns.
